@@ -4,14 +4,16 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- ميزة الخرائط دون إنترنت متوقفة؛ نزيل خدمة WorkManager الأمامية وإذنها -->
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"
+        tools:node="remove" />
+
     <application>
-        <!-- يسمح لـ WorkManager بتشغيل تنزيل الخرائط كخدمة أمامية من نوع مزامنة بيانات -->
         <service
             android:name="androidx.work.impl.foreground.SystemForegroundService"
-            android:foregroundServiceType="dataSync"
-            tools:node="merge" />
+            tools:node="remove" />
     </application>
 </manifest>
