@@ -2,6 +2,6 @@
     <string name="app_name">طرق عراقنا</string>
     <string name="welcome">أهلاً بك في أفضل تطبيق عراقي للطرق</string>
     <string name="nav_channel">الملاحة</string>
-    <string name="support_email" translatable="false">example@gmail.com</string>
-    <string name="privacy_url" translatable="false">https://salwanmosul4-del.github.io/turuq-privacy/
+    <string name="support_email" translatable="false">salwanmosul4@gmail.com</string>
+    <string name="privacy_url" translatable="false">https://salwanmosul4-del.github.io/turuq-privacy/</string>
 </resources>
