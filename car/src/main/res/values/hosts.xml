@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      قائمة المضيفين المسموح لهم بالاتصال بالتطبيق في نسخة الإصدار.
+      كل سطر: "اسم الحزمة,بصمة SHA-256 للتوقيع". انسخ القيم الرسمية لمضيفي Google
+      (Android Auto و Automotive) من ملف hosts_allowlist_sample.xml في أمثلة androidx.car.app
+      قبل النشر؛ لم أضع البصمات من الذاكرة حتى لا أضع قيمة خاطئة.
+    -->
+    <string-array name="hosts_allowlist">
+        <item>com.google.android.projection.gearhead,REPLACE_WITH_OFFICIAL_SHA256</item>
+        <item>com.google.android.apps.automotive.templates.host,REPLACE_WITH_OFFICIAL_SHA256</item>
+    </string-array>
+</resources>

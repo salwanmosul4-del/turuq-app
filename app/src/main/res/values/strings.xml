@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">طرق عراقنا</string>
+    <string name="welcome">أهلاً بك في أفضل تطبيق عراقي للطرق</string>
+    <string name="nav_channel">الملاحة</string>
+    <string name="support_email" translatable="false">PUT_EMAIL_HERE</string>
+    <string name="privacy_url" translatable="false">PUT_PRIVACY_URL_HERE</string>
+</resources>
