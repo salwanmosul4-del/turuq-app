@@ -1,0 +1,67 @@
+name: Build Android (Kotlin)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: '8.13'
+
+    - name: Fetch Arabic map fonts (for offline maps)
+      run: |
+        for FONT in "Noto Sans Regular" "Noto Sans Bold"; do
+          mkdir -p "core/src/main/assets/glyphs/$FONT"
+          for R in 0-255 256-511 1536-1791 1792-2047 8192-8447 64256-64511 64512-64767 64768-65023 65024-65279 65280-65535; do
+            curl -fsS -o "core/src/main/assets/glyphs/$FONT/$R.pbf" "https://tiles.openfreemap.org/fonts/${FONT// /%20}/$R.pbf" || echo "skip $FONT $R"
+          done
+        done
+        find core/src/main/assets/glyphs -type f | wc -l
+
+    - name: Build phone app
+      run: |
+        set -o pipefail
+        gradle :app:assembleDebug --stacktrace --warning-mode none 2>&1 | tee build.log
+
+    - name: Summarize errors
+      if: failure()
+      run: |
+        {
+          echo "## Build errors (copy this to Claude)"
+          echo '```'
+          grep -E "^e: |error:|What went wrong|Could not|FAILED|Unresolved|Execution failed" -A2 build.log | head -120
+          echo '```'
+        } >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Collect APK
+      run: |
+        mkdir -p out
+        find . -name "*.apk" -path "*debug*" -not -path "./out/*" -exec cp {} out/app-debug.apk \; -quit
+        ls -la out
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: app-debug
+        path: out/app-debug.apk
+        if-no-files-found: error
+
+    - uses: softprops/action-gh-release@v2
+      with:
+        tag_name: kotlin-build-${{ github.run_number }}
+        name: Kotlin build ${{ github.run_number }}
+        files: out/app-debug.apk
