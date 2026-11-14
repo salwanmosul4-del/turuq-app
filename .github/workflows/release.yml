@@ -1,0 +1,60 @@
+name: Release AAB (Google Play)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: '8.13'
+
+    - name: Fetch Arabic map fonts
+      run: |
+        for FONT in "Noto Sans Regular" "Noto Sans Bold"; do
+          mkdir -p "core/src/main/assets/glyphs/$FONT"
+          for R in 0-255 256-511 1536-1791 1792-2047 8192-8447 64256-64511 64512-64767 64768-65023 65024-65279 65280-65535; do
+            curl -fsS -o "core/src/main/assets/glyphs/$FONT/$R.pbf" "https://tiles.openfreemap.org/fonts/${FONT// /%20}/$R.pbf" || echo "skip $FONT $R"
+          done
+        done
+
+    - name: Decode upload keystore
+      run: echo "${{ secrets.UPLOAD_KEYSTORE_B64 }}" | base64 -d > "$RUNNER_TEMP/upload.jks"
+
+    - name: Build signed AAB
+      env:
+        TURUQ_KEYSTORE: ${{ runner.temp }}/upload.jks
+        TURUQ_STORE_PASS: ${{ secrets.UPLOAD_STORE_PASS }}
+        TURUQ_KEY_ALIAS: ${{ secrets.UPLOAD_KEY_ALIAS }}
+        TURUQ_KEY_PASS: ${{ secrets.UPLOAD_KEY_PASS }}
+      run: |
+        set -o pipefail
+        gradle :app:bundleRelease -Pvc=${{ github.run_number }} --stacktrace --warning-mode none 2>&1 | tee build.log
+
+    - name: Summarize errors
+      if: failure()
+      run: |
+        {
+          echo "## Build errors (copy this to Claude)"
+          echo '```'
+          grep -E "^e: |error:|What went wrong|Could not|FAILED|Unresolved|Execution failed" -A2 build.log | head -120
+          echo '```'
+        } >> "$GITHUB_STEP_SUMMARY"
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: app-release-aab
+        path: app/build/outputs/bundle/release/app-release.aab
+        if-no-files-found: error
